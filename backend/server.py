@@ -104,7 +104,7 @@ class MenuItem(MenuItemIn):
 class Settings(BaseModel):
     id: str = "store"
     store_name: str = "Forneto Pizzaria Express"
-    tagline: str = "A melhor comida da região"
+    tagline: str = "A melhor pizza da região"
     hero_claim: str = "Pizza no forno pronta em 3 minutos"
     whatsapp_number: str = "556296132571"
     address: str = "Av. Gercina Borges Teixeira, 1014"
