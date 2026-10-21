@@ -272,6 +272,34 @@ async def create_order(body: OrderIn):
     return order
 
 
+@api_router.get("/admin/stats")
+async def admin_stats(admin=Depends(get_admin)):
+    orders = await db.orders.find({}, {"_id": 0}).to_list(2000)
+    gyn_tz = timezone(timedelta(hours=-3))  # horário de Goiânia (UTC-3)
+    today = datetime.now(gyn_tz).date()
+
+    def order_date(o):
+        try:
+            return datetime.fromisoformat(o["created_at"]).astimezone(gyn_tz).date()
+        except Exception:
+            return None
+
+    today_orders = [o for o in orders if order_date(o) == today]
+    flavor_count = {}
+    for o in orders:
+        for line in o.get("lines", []):
+            variant = line.get("variant") or ""
+            for f in [x.strip() for x in variant.split(" / ") if x.strip()]:
+                flavor_count[f] = flavor_count.get(f, 0) + line.get("qty", 1)
+    top_flavors = sorted(flavor_count.items(), key=lambda x: -x[1])[:5]
+    return {
+        "today_total": round(sum(o.get("total", 0) for o in today_orders), 2),
+        "today_count": len(today_orders),
+        "all_total": round(sum(o.get("total", 0) for o in orders), 2),
+        "top_flavors": [{"name": n, "qty": q} for n, q in top_flavors],
+    }
+
+
 @api_router.get("/admin/orders", response_model=List[Order])
 async def admin_list_orders(admin=Depends(get_admin)):
     return await db.orders.find({}, {"_id": 0}).sort("created_at", -1).to_list(300)

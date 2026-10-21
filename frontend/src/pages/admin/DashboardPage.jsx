@@ -61,6 +61,7 @@ export default function DashboardPage() {
   const [addons, setAddons] = useState([]);
   const [zones, setZones] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [stats, setStats] = useState(null);
 
   const [addonDialog, setAddonDialog] = useState(false);
   const [addonForm, setAddonForm] = useState(EMPTY_ADDON);
@@ -80,13 +81,14 @@ export default function DashboardPage() {
 
   const load = useCallback(async () => {
     try {
-      const [cats, its, st, ads, zns, ords] = await Promise.all([
+      const [cats, its, st, ads, zns, ords, sts] = await Promise.all([
         api.get("/admin/categories"),
         api.get("/admin/items"),
         api.get("/settings"),
         api.get("/admin/addons"),
         api.get("/admin/zones"),
         api.get("/admin/orders"),
+        api.get("/admin/stats"),
       ]);
       setCategories(cats.data);
       setItems(its.data);
@@ -94,6 +96,7 @@ export default function DashboardPage() {
       setAddons(ads.data);
       setZones(zns.data);
       setOrders(ords.data);
+      setStats(sts.data);
     } catch (e) {
       if (e?.response?.status === 401) {
         localStorage.removeItem("forneto_token");
@@ -294,6 +297,36 @@ export default function DashboardPage() {
 
           {/* ORDERS */}
           <TabsContent value="orders" className="mt-6">
+            {stats && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" data-testid="sales-summary">
+                <div className="bg-surface2 border border-white/10 rounded-2xl p-5">
+                  <span className="mono-badge text-[10px] font-bold uppercase tracking-widest text-ember block mb-1">Vendido hoje</span>
+                  <p className="font-display text-3xl font-black text-white" data-testid="stats-today-total">{brl(stats.today_total)}</p>
+                  <p className="text-[11px] text-smoke mt-1" data-testid="stats-today-count">
+                    {stats.today_count} {stats.today_count === 1 ? "pedido" : "pedidos"} hoje
+                  </p>
+                </div>
+                <div className="bg-surface2 border border-white/10 rounded-2xl p-5">
+                  <span className="mono-badge text-[10px] font-bold uppercase tracking-widest text-ember block mb-1">Total acumulado</span>
+                  <p className="font-display text-3xl font-black text-white" data-testid="stats-all-total">{brl(stats.all_total)}</p>
+                  <p className="text-[11px] text-smoke mt-1">{orders.length} pedidos no total</p>
+                </div>
+                <div className="bg-surface2 border border-white/10 rounded-2xl p-5">
+                  <span className="mono-badge text-[10px] font-bold uppercase tracking-widest text-ember block mb-2">Sabores mais pedidos</span>
+                  {stats.top_flavors.length === 0 && (
+                    <p className="text-[11px] text-smoke" data-testid="stats-no-flavors">Sem sabores registrados ainda.</p>
+                  )}
+                  <ul className="space-y-1" data-testid="stats-top-flavors">
+                    {stats.top_flavors.map((f, i) => (
+                      <li key={f.name} className="flex justify-between text-[11px]">
+                        <span className="text-cream font-bold">{i + 1}. {f.name}</span>
+                        <span className="mono-badge text-ember font-bold">{f.qty}x</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
             <div className="flex justify-between items-center mb-4">
               <p className="text-xs text-smoke">{orders.length} pedidos recebidos via WhatsApp</p>
               <Button data-testid="refresh-orders-button" variant="outline" onClick={load} className="border-white/10 bg-transparent text-cream hover:bg-white/10 hover:text-white">

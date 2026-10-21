@@ -45,8 +45,11 @@ The checkout process should take place via WhatsApp, and the digital menu access
 - Payment method in cart: Pix / Cartão / Dinheiro (+ optional "troco para"), included in WhatsApp message
 - Order history: POST /api/orders on checkout; admin "Pedidos" tab lists orders with lines, payment, fee, total and status workflow (Novo → Em preparo → Saiu p/ entrega → Concluído)
 
+## Implemented (2026-10-21, iteration 5)
+- Sales summary: GET /api/admin/stats (Goiânia UTC-3 "today"); dashboard Pedidos tab shows "Vendido hoje", "Total acumulado" and top-5 most ordered flavors
+
 ## Backlog
 - P0: confirm real WhatsApp number with owner; owner fills real add-on prices, delivery fees and P-size flavor prices in admin
 - P1: real customer testimonials replacing placeholder
 - P2: image upload (object storage) instead of URL paste
-- P2: order stats (daily revenue) in dashboard
+- P2: weekly/monthly revenue chart in dashboard
