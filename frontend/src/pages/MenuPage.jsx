@@ -146,7 +146,7 @@ export default function MenuPage() {
         </div>
       </section>
 
-      <Marquee />
+      <Marquee tagline={settings.tagline} />
 
       {/* MENU — PIZZAS */}
       <section id="cardapio" className="py-24 px-6 max-w-6xl mx-auto scroll-mt-20">

@@ -18,7 +18,8 @@ The checkout process should take place via WhatsApp, and the digital menu access
 - Auth: JWT Bearer (12h), bcrypt, admin seeded idempotently from env (ADMIN_EMAIL/ADMIN_PASSWORD)
 - Admin: CRUD /api/admin/categories, /api/admin/items, PUT /api/admin/settings
 - Checkout: wa.me deep link with formatted order message (no API needed)
-- WhatsApp number: 556296132571 (from public registry — PENDING owner confirmation; editable in admin settings)
+- WhatsApp number: 5562996631419 (owner-provided, confirmed 2026-10-21; editable in admin settings)
+- Tagline: "A melhor pizza da região" (owner-adjusted 2026-10-21)
 
 ## User personas
 - Customer: mobile user in Goiânia ordering pizza for delivery/pickup in the evening
@@ -49,7 +50,7 @@ The checkout process should take place via WhatsApp, and the digital menu access
 - Sales summary: GET /api/admin/stats (Goiânia UTC-3 "today"); dashboard Pedidos tab shows "Vendido hoje", "Total acumulado" and top-5 most ordered flavors
 
 ## Backlog
-- P0: confirm real WhatsApp number with owner; owner fills real add-on prices, delivery fees and P-size flavor prices in admin
+- P0: owner fills real add-on prices, delivery fees and P-size flavor prices in admin
 - P1: real customer testimonials replacing placeholder
 - P2: image upload (object storage) instead of URL paste
 - P2: weekly/monthly revenue chart in dashboard

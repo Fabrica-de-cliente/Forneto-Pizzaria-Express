@@ -46,11 +46,11 @@ export function MenuNav({ settings, cartCount, onOpenCart }) {
   );
 }
 
-export function Marquee() {
+export function Marquee({ tagline }) {
   const items = [
     "FORNETO EXPRESS GOIÂNIA",
     "PIZZA EM ATÉ 3 MINUTOS",
-    "A MELHOR COMIDA DA REGIÃO",
+    (tagline || "A melhor pizza da região").toUpperCase(),
     "DELIVERY & RETIRADA NO BALCÃO",
   ];
   const strip = [...items, ...items];
