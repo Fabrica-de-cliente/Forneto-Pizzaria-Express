@@ -1,0 +1,270 @@
+<div class="dir-3 bg-[#181512] text-[#F3EFEA] min-h-screen selection:bg-[#E8590C] selection:text-white" style="font-family:Futura,'Century Gothic','Trebuchet MS',sans-serif">
+<style>
+.dir-3 .mono-badge{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+.dir-3 .body-text{font-family:'Avenir Next','Helvetica Neue',Segoe UI,Arial,sans-serif}
+.dir-3 .ln{display:block;overflow:hidden}
+.dir-3 .ln>span{display:block;animation:d3-up .8s cubic-bezier(.2,.7,0,1) both}
+.dir-3 .ln:nth-child(2)>span{animation-delay:.1s}
+.dir-3 .ln:nth-child(3)>span{animation-delay:.2s}
+.dir-3 .drift-slow{animation:d3-drift 20s ease-in-out infinite alternate;background-size:130% 130%}
+.dir-3 .mq{display:flex;width:max-content;animation:d3-mq 30s linear infinite}
+@keyframes d3-up{from{transform:translateY(110%)}to{transform:translateY(0)}}
+@keyframes d3-drift{0%{background-position:10% 20%}100%{background-position:90% 80%}}
+@keyframes d3-mq{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.dir-3 *{animation:none!important}}
+</style>
+
+<!-- NAV -->
+<header class="sticky top-0 z-50 bg-[#181512]/90 backdrop-blur-md border-b border-white/10">
+  <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-[#E8590C] flex items-center justify-center text-white font-black text-xl shadow-lg">
+        F
+      </div>
+      <div>
+        <span class="font-extrabold text-xl tracking-tight text-white block leading-none" data-content-slot="brand_name" data-slot-source="brief">FORNETO</span>
+        <span class="mono-badge text-[9px] uppercase tracking-widest text-[#E8590C] font-bold">EXPRESS GOIÂNIA</span>
+      </div>
+    </div>
+
+    <nav class="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-[#A29A91]">
+      <a href="#cardapio-rapido" class="hover:text-white transition-colors">Cardápio & Preços</a>
+      <a href="#diferenciais-forneto" class="hover:text-white transition-colors">3 Minutos de Forno</a>
+      <a href="#onde-estamos" class="hover:text-white transition-colors">Vera Cruz</a>
+    </nav>
+
+    <a href="#enviar-whatsapp" class="inline-flex items-center gap-2 bg-[#E8590C] hover:bg-[#D9480F] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-lg shadow-[#E8590C]/20">
+      <span>Pedir WhatsApp</span>
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</header>
+
+<!-- HERO SET-PIECE -->
+<section class="py-16 md:py-24 px-6 max-w-6xl mx-auto">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#E8590C]/20 border border-[#E8590C]/30 text-[#E8590C] text-xs font-bold uppercase tracking-widest mb-6">
+    <span>★ Unidade Goiânia</span>
+    <span class="text-white/40">·</span>
+    <span data-content-slot="address_short" data-slot-source="brief">Conjunto Vera Cruz</span>
+  </div>
+
+  <h1 class="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-white leading-[0.95] mb-8">
+    <span class="ln"><span>PIZZA NO FORNO</span></span>
+    <span class="ln"><span class="text-[#E8590C]">PRONTA EM</span></span>
+    <span class="ln"><span>3 MINUTOS</span></span>
+  </h1>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-12">
+    <div class="lg:col-span-8">
+      <p class="body-text text-lg md:text-xl text-[#C2BBB2] leading-relaxed max-w-2xl" data-content-slot="differentiator" data-slot-source="brief">
+        A melhor comida da região, assada no forno contínuo de alta precisão. Peça online e receba rápido em casa ou retire no balcão.
+      </p>
+    </div>
+    <div class="lg:col-span-4 flex gap-3">
+      <a href="#cardapio-rapido" class="flex-1 text-center bg-white text-[#181512] hover:bg-[#E8590C] hover:text-white py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider transition-colors">
+        Ver Cardápio
+      </a>
+      <a href="#enviar-whatsapp" class="flex-1 text-center bg-[#E8590C] text-white py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider transition-colors">
+        WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <!-- HERO FULL-BLEED IMAGE STRIP -->
+  <div class="w-full h-80 md:h-[440px] rounded-3xl overflow-hidden relative border border-white/10 shadow-2xl drift-slow"
+       data-image-slot="hero-pizza-fire: continuous conveyor high speed pizza oven baking golden crispy crusts in real time"
+       style="background:radial-gradient(90% 70% at 50% 50%,#f39c12 0%,#d35400 50%,#2c0b02 100%)">
+    <div class="absolute inset-0 bg-gradient-to-t from-[#181512] via-transparent to-transparent"></div>
+    <div class="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <span class="mono-badge text-[11px] uppercase tracking-widest text-[#f39c12] font-bold">Tecnologia Forneto Express</span>
+        <p class="text-2xl font-black text-white mt-1">Alta velocidade e padrão gastronômico rigoroso.</p>
+      </div>
+      <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-white mono-badge">
+        Forno Contínuo: 3 Minutos
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE BAR -->
+<div class="border-y border-white/10 bg-[#241F1A] py-3.5 overflow-hidden select-none">
+  <div class="mq text-xs font-extrabold uppercase tracking-widest text-[#E8590C] flex items-center gap-10">
+    <span class="text-white">FORNETO EXPRESS GOIÂNIA</span>
+    <span>•</span>
+    <span>PIZZA EM ATÉ 3 MINUTOS</span>
+    <span>•</span>
+    <span class="text-white">A MELHOR COMIDA DA REGIÃO</span>
+    <span>•</span>
+    <span>DELIVERY & RETIRADA NO BALCÃO</span>
+    <span>•</span>
+    <span class="text-white">FORNETO EXPRESS GOIÂNIA</span>
+    <span>•</span>
+    <span>PIZZA EM ATÉ 3 MINUTOS</span>
+    <span>•</span>
+    <span class="text-white">A MELHOR COMIDA DA REGIÃO</span>
+    <span>•</span>
+    <span>DELIVERY & RETIRADA NO BALCÃO</span>
+    <span>•</span>
+  </div>
+</div>
+
+<!-- DIGITAL MENU -->
+<section id="cardapio-rapido" class="py-24 px-6 max-w-6xl mx-auto">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+    <div>
+      <span class="mono-badge text-xs font-bold uppercase tracking-widest text-[#E8590C]">Cardápio Digital</span>
+      <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight mt-1 text-white">Nossas Pizzas</h2>
+    </div>
+    <p class="body-text text-[#A29A91] text-xs max-w-xs">Escolha seus sabores favoritos e envie direto para o atendente do WhatsApp.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Item 1 -->
+    <div class="bg-[#241F1A] rounded-2xl p-5 border border-white/10 flex flex-col justify-between group">
+      <div>
+        <div class="w-full h-48 rounded-xl overflow-hidden relative mb-4 drift-slow"
+             data-image-slot="menu-pizza-bacon: savory bacon and cheddar cheese pizza bubbling straight from high heat oven"
+             style="background:radial-gradient(70% 70% at 50% 40%,#e67e22 0%,#c0392b 60%,#1e0a05 100%)">
+          <div class="absolute top-3 left-3 bg-[#E8590C] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase mono-badge">Top Pedido</div>
+        </div>
+        <div class="flex justify-between items-start mb-2">
+          <h3 class="text-xl font-black text-white" data-content-slot="item_name_1" data-slot-source="placeholder">Bacon com Cheddar</h3>
+          <span class="text-lg font-black text-[#E8590C] mono-badge" data-content-slot="item_price_1" data-slot-source="placeholder">R$ 43,90</span>
+        </div>
+        <p class="body-text text-xs text-[#A29A91] leading-relaxed mb-4">Molho de tomate especial, muçarela, bacon crocante em cubos e cheddar cremoso importado.</p>
+      </div>
+      <button type="button" class="w-full py-2.5 bg-white/10 hover:bg-[#E8590C] text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-colors border border-white/10">
+        + Adicionar ao Pedido
+      </button>
+    </div>
+
+    <!-- Item 2 -->
+    <div class="bg-[#241F1A] rounded-2xl p-5 border border-white/10 flex flex-col justify-between group">
+      <div>
+        <div class="w-full h-48 rounded-xl overflow-hidden relative mb-4 drift-slow"
+             data-image-slot="menu-pizza-carne-seca: shredded sun dried beef pizza with catupiry and melted mozzarella"
+             style="background:radial-gradient(70% 70% at 50% 40%,#d35400 0%,#962d00 60%,#180802 100%)">
+          <div class="absolute top-3 left-3 bg-[#E8590C] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase mono-badge">Especial</div>
+        </div>
+        <div class="flex justify-between items-start mb-2">
+          <h3 class="text-xl font-black text-white" data-content-slot="item_name_2" data-slot-source="placeholder">Carne Seca Especial</h3>
+          <span class="text-lg font-black text-[#E8590C] mono-badge" data-content-slot="item_price_2" data-slot-source="placeholder">R$ 47,90</span>
+        </div>
+        <p class="body-text text-xs text-[#A29A91] leading-relaxed mb-4">Carne seca desfiada e temperada, muçarela, cebola roxa fininha e requeijão Catupiry.</p>
+      </div>
+      <button type="button" class="w-full py-2.5 bg-white/10 hover:bg-[#E8590C] text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-colors border border-white/10">
+        + Adicionar ao Pedido
+      </button>
+    </div>
+
+    <!-- Item 3 -->
+    <div class="bg-[#241F1A] rounded-2xl p-5 border border-white/10 flex flex-col justify-between group">
+      <div>
+        <div class="w-full h-48 rounded-xl overflow-hidden relative mb-4 drift-slow"
+             data-image-slot="menu-pizza-chocolate: sweet dessert chocolate pizza topped with fresh sliced strawberries"
+             style="background:radial-gradient(70% 70% at 50% 40%,#e74c3c 0%,#571d1d 60%,#120404 100%)">
+          <div class="absolute top-3 left-3 bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase mono-badge">Doce</div>
+        </div>
+        <div class="flex justify-between items-start mb-2">
+          <h3 class="text-xl font-black text-white" data-content-slot="item_name_3" data-slot-source="placeholder">Chocolate com Morango</h3>
+          <span class="text-lg font-black text-[#E8590C] mono-badge" data-content-slot="item_price_3" data-slot-source="placeholder">R$ 39,90</span>
+        </div>
+        <p class="body-text text-xs text-[#A29A91] leading-relaxed mb-4">Camada generosa de chocolate ao leite nobre e morangos frescos fatiados na hora.</p>
+      </div>
+      <button type="button" class="w-full py-2.5 bg-white/10 hover:bg-[#E8590C] text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-colors border border-white/10">
+        + Adicionar ao Pedido
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- BEVERAGES -->
+<section class="py-16 bg-[#201C18] border-y border-white/10">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+      <div>
+        <span class="mono-badge text-xs font-bold uppercase tracking-widest text-[#E8590C]">Bebidas & Refrigerantes</span>
+        <h2 class="text-3xl md:text-4xl font-black uppercase tracking-tight text-white mt-1">Bebidas Geladas</h2>
+      </div>
+      <p class="body-text text-[#A29A91] text-xs max-w-xs">Sucos e refrigerantes na temperatura certa para acompanhar seu pedido.</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="bg-[#2B2520] p-4 rounded-xl border border-white/10 flex flex-col justify-between">
+        <div class="w-full h-32 rounded-lg overflow-hidden mb-3 drift-slow"
+             data-image-slot="drink-coca-zero: chilled coca cola zero can with water beads"
+             style="background:radial-gradient(80% 80% at 50% 30%,#333333 0%,#000000 100%)">
+        </div>
+        <h4 class="font-bold text-xs text-white">Coca-Cola Zero 350ml</h4>
+        <span class="mono-badge text-xs font-bold text-[#E8590C] mt-1">R$ 6,00</span>
+      </div>
+
+      <div class="bg-[#2B2520] p-4 rounded-xl border border-white/10 flex flex-col justify-between">
+        <div class="w-full h-32 rounded-lg overflow-hidden mb-3 drift-slow"
+             data-image-slot="drink-fanta-laranja: orange fanta soda can with cold droplets"
+             style="background:radial-gradient(80% 80% at 50% 30%,#f39c12 0%,#a04000 100%)">
+        </div>
+        <h4 class="font-bold text-xs text-white">Fanta Laranja 2L</h4>
+        <span class="mono-badge text-xs font-bold text-[#E8590C] mt-1">R$ 13,00</span>
+      </div>
+
+      <div class="bg-[#2B2520] p-4 rounded-xl border border-white/10 flex flex-col justify-between">
+        <div class="w-full h-32 rounded-lg overflow-hidden mb-3 drift-slow"
+             data-image-slot="drink-suco-uva: rich purple natural grape juice glass with ice"
+             style="background:radial-gradient(80% 80% at 50% 30%,#8e44ad 0%,#3b114d 100%)">
+        </div>
+        <h4 class="font-bold text-xs text-white">Suco Integral de Uva 500ml</h4>
+        <span class="mono-badge text-xs font-bold text-[#E8590C] mt-1">R$ 10,00</span>
+      </div>
+
+      <div class="bg-[#2B2520] p-4 rounded-xl border border-white/10 flex flex-col justify-between">
+        <div class="w-full h-32 rounded-lg overflow-hidden mb-3 drift-slow"
+             data-image-slot="drink-cerveja-brahma: ice cold brahma duplo malto beer can"
+             style="background:radial-gradient(80% 80% at 50% 30%,#c0392b 0%,#4a0e08 100%)">
+        </div>
+        <h4 class="font-bold text-xs text-white">Brahma Duplo Malto</h4>
+        <span class="mono-badge text-xs font-bold text-[#E8590C] mt-1">R$ 7,50</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCATION & HONEST REVIEWS CTA -->
+<section id="onde-estamos" class="py-20 px-6 max-w-6xl mx-auto">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#241F1A] border border-white/10 p-8 md:p-12 rounded-3xl">
+    <div class="lg:col-span-7">
+      <span class="mono-badge text-xs font-bold text-[#E8590C] uppercase tracking-widest block mb-2">Unidade Vera Cruz</span>
+      <h2 class="text-3xl md:text-4xl font-black uppercase text-white mb-4">Peça agora no WhatsApp</h2>
+      <p class="body-text text-xs text-[#A29A91] leading-relaxed mb-6" data-content-slot="location_address" data-slot-source="brief">
+        Av. Gercina Borges Teixeira, 1014, Conjunto Vera Cruz, Goiânia - GO. Atendimento ágil para entrega rápida e retirada imediata no balcão.
+      </p>
+      <a id="enviar-whatsapp" href="#carrinho" class="inline-flex items-center gap-2 bg-[#E8590C] hover:bg-[#D9480F] text-white px-7 py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider transition-colors shadow-lg">
+        Concluir Pedido no WhatsApp
+      </a>
+    </div>
+
+    <div class="lg:col-span-5 bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
+      <span class="mono-badge text-[10px] text-[#E8590C] uppercase tracking-widest block mb-2">Depoimentos dos Clientes</span>
+      <div class="text-amber-400 text-base mb-2">★★★★★</div>
+      <p class="body-text text-xs text-[#A29A91] italic" data-content-slot="reviews" data-slot-source="placeholder">
+        Os depoimentos dos clientes da Forneto Pizzaria Express em Goiânia serão exibidos aqui.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-white/10 bg-[#181512] py-12 px-6">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#A29A91]">
+    <div class="flex items-center gap-2">
+      <span class="font-extrabold text-white">FORNETO PIZZARIA EXPRESS</span>
+      <span>• Goiânia / GO</span>
+    </div>
+    <div class="mono-badge text-[11px]">
+      Dashboard da Equipe: Controle de Estoque & Cardápio
+    </div>
+    <p>© 2025 Forneto Pizzaria Express. Todos os direitos reservados.</p>
+  </div>
+</footer>
+</div>

@@ -1,0 +1,203 @@
+{
+  "build_manifest": {
+    "direction": {
+      "path": "/app/design/direction.html",
+      "app_type": "restaurant-food",
+      "ambition": "A3",
+      "mode": "light",
+      "rail": "whatsapp",
+      "spine": "NAV-HERO-MARQUEE-PIZZAS-DRINKS-LOCATION-FOOTER",
+      "name": "Night Oven Setpiece",
+      "tone": "modern-nocturne",
+      "axes": {
+        "layout": "full-bleed-alternating",
+        "hero": "set-piece",
+        "tone_register": "dark-punchy",
+        "proof": "honest-empty",
+        "motion": "interactive-reveal",
+        "colour": "charcoal-stone+flame-orange",
+        "type_pairing": "sans-display+sans-body"
+      }
+    },
+    "tone_tokens": {
+      "typography": {
+        "heading_family": "Futura, 'Century Gothic', 'Trebuchet MS', sans-serif",
+        "body_family": "'Avenir Next', 'Helvetica Neue', Segoe UI, Arial, sans-serif",
+        "mono_family": "ui-monospace, 'SF Mono', Menlo, Consolas, monospace",
+        "scale": {
+          "h1": "text-5xl md:text-7xl lg:text-8xl",
+          "h2": "text-4xl md:text-5xl",
+          "h3": "text-xl",
+          "body_large": "text-lg md:text-xl",
+          "body": "text-xs",
+          "badge": "text-[9px] to text-xs"
+        },
+        "weights": {
+          "heading": "font-black",
+          "body": "font-normal",
+          "badge": "font-bold to font-extrabold"
+        }
+      },
+      "colors": {
+        "background": "#181512",
+        "surface": "#241F1A",
+        "surface_alt": "#201C18",
+        "surface_card": "#2B2520",
+        "text_primary": "#F3EFEA",
+        "text_secondary": "#C2BBB2",
+        "text_muted": "#A29A91",
+        "accent": "#E8590C",
+        "accent_hover": "#D9480F",
+        "border": "rgba(255, 255, 255, 0.1)"
+      },
+      "spacing": "p-5, p-6, py-16, py-24, gap-8",
+      "radii": "rounded-lg, rounded-xl, rounded-2xl, rounded-3xl",
+      "shadows": "shadow-lg, shadow-2xl, shadow-[#E8590C]/20"
+    },
+    "conversion_wiring": {
+      "primary_action": "whatsapp",
+      "controls": [
+        {
+          "location": "nav",
+          "text": "Pedir WhatsApp",
+          "action": "open_cart_or_checkout"
+        },
+        {
+          "location": "hero",
+          "text": "WhatsApp",
+          "action": "open_cart_or_checkout"
+        },
+        {
+          "location": "pizza_card",
+          "text": "+ Adicionar ao Pedido",
+          "action": "add_to_cart"
+        },
+        {
+          "location": "location_section",
+          "text": "Concluir Pedido no WhatsApp",
+          "action": "open_cart_or_checkout"
+        }
+      ],
+      "whatsapp_number": "556296132571"
+    },
+    "content_slots": [
+      {
+        "slot": "brand_name",
+        "text": "FORNETO",
+        "source": "brief"
+      },
+      {
+        "slot": "address_short",
+        "text": "Conjunto Vera Cruz",
+        "source": "brief"
+      },
+      {
+        "slot": "differentiator",
+        "text": "A melhor comida da região, assada no forno contínuo de alta precisão. Peça online e receba rápido em casa ou retire no balcão.",
+        "source": "brief"
+      },
+      {
+        "slot": "item_name_1",
+        "text": "Bacon com Cheddar",
+        "source": "placeholder"
+      },
+      {
+        "slot": "item_price_1",
+        "text": "R$ 43,90",
+        "source": "placeholder"
+      },
+      {
+        "slot": "item_name_2",
+        "text": "Carne Seca Especial",
+        "source": "placeholder"
+      },
+      {
+        "slot": "item_price_2",
+        "text": "R$ 47,90",
+        "source": "placeholder"
+      },
+      {
+        "slot": "item_name_3",
+        "text": "Chocolate com Morango",
+        "source": "placeholder"
+      },
+      {
+        "slot": "item_price_3",
+        "text": "R$ 39,90",
+        "source": "placeholder"
+      },
+      {
+        "slot": "location_address",
+        "text": "Av. Gercina Borges Teixeira, 1014, Conjunto Vera Cruz, Goiânia - GO. Atendimento ágil para entrega rápida e retirada imediata no balcão.",
+        "source": "brief"
+      },
+      {
+        "slot": "reviews",
+        "text": "Os depoimentos dos clientes da Forneto Pizzaria Express em Goiânia serão exibidos aqui.",
+        "source": "placeholder"
+      }
+    ],
+    "fabrication_guardrails": [
+      "No made-up reviews",
+      "No fake star ratings other than the honest-empty placeholder provided",
+      "No fake statistics or awards",
+      "No client logos",
+      "No fake founding years"
+    ],
+    "locale": {
+      "language": "pt-BR",
+      "currency": "BRL",
+      "number_format": "pt-BR"
+    }
+  },
+  "image_urls": [
+    {
+      "category": "hero-pizza-fire",
+      "url": "https://images.pexels.com/photos/29626981/pexels-photo-29626981.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Delicious artisan pizza baking in a traditional wood-fired oven with flames."
+    },
+    {
+      "category": "menu-pizza-bacon",
+      "url": "https://images.pexels.com/photos/30343607/pexels-photo-30343607.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Close-up of a cheesy artisanal pizza topped with cheddar and crispy bacon."
+    },
+    {
+      "category": "menu-pizza-carne-seca",
+      "url": "https://images.pexels.com/photos/19786235/pexels-photo-19786235.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "A mouthwatering display of freshly baked pizzas with various toppings."
+    },
+    {
+      "category": "menu-pizza-chocolate",
+      "url": "https://images.pexels.com/photos/33457632/pexels-photo-33457632.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "A mouthwatering dessert pizza topped with strawberries, cream, and chocolate."
+    },
+    {
+      "category": "drink-coca-zero",
+      "url": "https://images.pexels.com/photos/19504042/pexels-photo-19504042.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Chilled Coca-Cola Zero Sugar can with water droplets."
+    },
+    {
+      "category": "drink-fanta-laranja",
+      "url": "https://images.pexels.com/photos/6920724/pexels-photo-6920724.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Close-up image of refreshing Fanta can with water droplets."
+    },
+    {
+      "category": "drink-suco-uva",
+      "url": "https://images.pexels.com/photos/12987518/pexels-photo-12987518.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Top-down shot of a refreshing purple grape drink filled with ice cubes."
+    },
+    {
+      "category": "drink-cerveja-brahma",
+      "url": "https://images.pexels.com/photos/17409432/pexels-photo-17409432.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Close-up of Brahma beer cans with dew."
+    }
+  ],
+  "instructions_to_main_agent": "/app/design/direction.html is the visual source of truth. These guidelines transcribe it and add real images. On any conflict, the direction file wins. Ensure that the cart system is built so users can add pizzas/drinks to their cart, and the checkout process formats a WhatsApp message sent to wa.me/556296132571. Add an admin dashboard where the owner can manage menu items and edit the WhatsApp number.",
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Do not invent facts or metrics outside of the content slots.",
+    "Implement the shopping cart that aggregates items.",
+    "WhatsApp checkout should generate a pre-filled text with the user's order.",
+    "Create an admin interface to manage the items and store settings.",
+    "Keep components accessible and include data-testid attributes on interactive elements."
+  ]
+}
