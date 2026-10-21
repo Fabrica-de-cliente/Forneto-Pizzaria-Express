@@ -2,23 +2,25 @@ import { useState } from "react";
 import { brl } from "@/lib/format";
 import { Minus, Plus, Trash2, X, MessageCircle } from "lucide-react";
 
-export function CartDrawer({ open, onClose, cart, items, onChangeQty, onRemove, settings }) {
+const slug = (s) => s.replace(/[^a-zA-Z0-9]/g, "-").slice(0, 40);
+
+export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, settings }) {
   const [name, setName] = useState("");
   const [mode, setMode] = useState("entrega");
   const [notes, setNotes] = useState("");
 
   const lines = Object.entries(cart)
-    .map(([id, qty]) => ({ item: items.find((i) => i.id === id), qty }))
-    .filter((l) => l.item && l.qty > 0);
+    .map(([key, e]) => ({ key, ...e }))
+    .filter((l) => l.qty > 0);
   const total = lines.reduce((s, l) => s + l.item.price * l.qty, 0);
+
+  const lineName = (l) => (l.variant ? `${l.item.name} (${l.variant})` : l.item.name);
 
   const checkout = () => {
     const parts = [
       "*Novo Pedido — Forneto Pizzaria Express*",
       "--------------------------",
-      ...lines.map(
-        (l) => `${l.qty}x ${l.item.name} — ${brl(l.item.price * l.qty)}`
-      ),
+      ...lines.map((l) => `${l.qty}x ${lineName(l)} — ${brl(l.item.price * l.qty)}`),
       "--------------------------",
       `*Total: ${brl(total)}*`,
       "",
@@ -54,38 +56,39 @@ export function CartDrawer({ open, onClose, cart, items, onChangeQty, onRemove, 
               Sua sacola está vazia. Adicione pizzas e bebidas do cardápio.
             </p>
           )}
-          {lines.map(({ item, qty }) => (
+          {lines.map((l) => (
             <div
-              key={item.id}
-              data-testid={`cart-line-${item.id}`}
+              key={l.key}
+              data-testid={`cart-line-${slug(l.key)}`}
               className="flex items-center gap-3 bg-card2 rounded-xl p-3 border border-white/10"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-white truncate">{item.name}</p>
-                <p className="mono-badge text-[11px] text-ember font-bold">{brl(item.price)}</p>
+                <p className="text-xs font-bold text-white">{l.item.name}</p>
+                {l.variant && <p className="text-[10px] text-ash truncate">Sabor: {l.variant}</p>}
+                <p className="mono-badge text-[11px] text-ember font-bold">{brl(l.item.price)}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  data-testid={`cart-dec-${item.id}`}
-                  onClick={() => onChangeQty(item.id, qty - 1)}
+                  data-testid={`cart-dec-${slug(l.key)}`}
+                  onClick={() => onChangeQty(l.key, l.qty - 1)}
                   className="w-7 h-7 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
                 >
                   <Minus className="w-3 h-3" />
                 </button>
-                <span className="text-xs font-bold text-white w-4 text-center">{qty}</span>
+                <span className="text-xs font-bold text-white w-4 text-center">{l.qty}</span>
                 <button
                   type="button"
-                  data-testid={`cart-inc-${item.id}`}
-                  onClick={() => onChangeQty(item.id, qty + 1)}
+                  data-testid={`cart-inc-${slug(l.key)}`}
+                  onClick={() => onChangeQty(l.key, l.qty + 1)}
                   className="w-7 h-7 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
                 >
                   <Plus className="w-3 h-3" />
                 </button>
                 <button
                   type="button"
-                  data-testid={`cart-remove-${item.id}`}
-                  onClick={() => onRemove(item.id)}
+                  data-testid={`cart-remove-${slug(l.key)}`}
+                  onClick={() => onRemove(l.key)}
                   className="w-7 h-7 rounded-md bg-red-500/10 hover:bg-red-500/30 flex items-center justify-center text-red-400"
                 >
                   <Trash2 className="w-3 h-3" />

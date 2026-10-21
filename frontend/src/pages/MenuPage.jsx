@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import { MenuNav, Marquee } from "@/components/menu/MenuNav";
 import { PizzaCard, DrinkCard } from "@/components/menu/ItemCard";
 import { CartDrawer } from "@/components/menu/CartDrawer";
+import { FlavorDialog } from "@/components/menu/FlavorDialog";
 import { MessageCircle, MapPin, Clock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,31 +15,37 @@ export default function MenuPage() {
   const [settings, setSettings] = useState(null);
   const [cart, setCart] = useState({});
   const [cartOpen, setCartOpen] = useState(false);
+  const [flavorItem, setFlavorItem] = useState(null);
 
   useEffect(() => {
     api.get("/menu").then((r) => setMenu(r.data)).catch(() => {});
     api.get("/settings").then((r) => setSettings(r.data)).catch(() => {});
   }, []);
 
-  const addToCart = (item) => {
-    setCart((c) => ({ ...c, [item.id]: (c[item.id] || 0) + 1 }));
-    toast.success(`${item.name} adicionado ao pedido`);
+  const addToCart = (item, variant = "") => {
+    const key = variant ? `${item.id}::${variant}` : item.id;
+    setCart((c) => ({ ...c, [key]: { item, variant, qty: (c[key]?.qty || 0) + 1 } }));
+    toast.success(variant ? `${item.name} (${variant}) adicionada` : `${item.name} adicionado ao pedido`);
   };
-  const changeQty = (id, qty) =>
+  const handleAdd = (item) => {
+    if (item.flavors && item.flavors.length > 0) setFlavorItem(item);
+    else addToCart(item);
+  };
+  const changeQty = (key, qty) =>
     setCart((c) => {
       const n = { ...c };
-      if (qty <= 0) delete n[id];
-      else n[id] = qty;
+      if (qty <= 0) delete n[key];
+      else n[key] = { ...n[key], qty };
       return n;
     });
-  const removeItem = (id) =>
+  const removeItem = (key) =>
     setCart((c) => {
       const n = { ...c };
-      delete n[id];
+      delete n[key];
       return n;
     });
 
-  const cartCount = Object.values(cart).reduce((s, q) => s + q, 0);
+  const cartCount = Object.values(cart).reduce((s, e) => s + e.qty, 0);
 
   const { pizzaCats, drinkCats } = useMemo(() => {
     const cats = menu.categories;
@@ -70,6 +77,17 @@ export default function MenuPage() {
           <span>★ Unidade Goiânia</span>
           <span className="text-white/40">·</span>
           <span>{settings.neighborhood}</span>
+        </div>
+        <div
+          data-testid="open-status-badge"
+          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest mb-6 ml-3 border ${
+            settings.is_open !== false
+              ? "bg-green-500/15 border-green-500/30 text-green-400"
+              : "bg-amber-500/15 border-amber-500/30 text-amber-400"
+          }`}
+        >
+          <span className={`w-2 h-2 rounded-full ${settings.is_open !== false ? "bg-green-400 animate-pulse" : "bg-amber-400"}`} />
+          {settings.is_open !== false ? "Aberto agora" : "Fechado no momento — pedidos por agendamento"}
         </div>
 
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-white leading-[0.95] mb-8">
@@ -141,7 +159,7 @@ export default function MenuPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {itemsOf(cat.id).map((item) => (
-                <PizzaCard key={item.id} item={item} onAdd={addToCart} />
+                <PizzaCard key={item.id} item={item} onAdd={handleAdd} />
               ))}
             </div>
           </div>
@@ -168,7 +186,7 @@ export default function MenuPage() {
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {itemsOf(cat.id).map((item) => (
-                  <DrinkCard key={item.id} item={item} onAdd={addToCart} />
+                  <DrinkCard key={item.id} item={item} onAdd={handleAdd} />
                 ))}
               </div>
             </div>
@@ -236,10 +254,17 @@ export default function MenuPage() {
         open={cartOpen}
         onClose={() => setCartOpen(false)}
         cart={cart}
-        items={menu.items}
         onChangeQty={changeQty}
         onRemove={removeItem}
         settings={settings}
+      />
+      <FlavorDialog
+        item={flavorItem}
+        onClose={() => setFlavorItem(null)}
+        onConfirm={(variant) => {
+          addToCart(flavorItem, variant);
+          setFlavorItem(null);
+        }}
       />
     </div>
   );

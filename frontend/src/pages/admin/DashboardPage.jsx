@@ -20,6 +20,7 @@ import { Flame, LogOut, Pencil, Plus, Trash2 } from "lucide-react";
 const EMPTY_ITEM = {
   name: "", description: "", price: "", category_id: "", image_url: "",
   badge: "", price_from: false, available: true, sort_order: 0,
+  flavors: [], max_flavors: 1,
 };
 const EMPTY_CAT = { name: "", group: "pizzas", sort_order: 0, active: true };
 
@@ -74,11 +75,19 @@ export default function DashboardPage() {
   };
   const openEditItem = (item) => {
     setEditItemId(item.id);
-    setItemForm({ ...item, price: String(item.price) });
+    setItemForm({ ...EMPTY_ITEM, ...item, price: String(item.price) });
     setItemDialog(true);
   };
   const saveItem = async () => {
-    const payload = { ...itemForm, price: parseFloat(String(itemForm.price).replace(",", ".")) || 0 };
+    const flavors = Array.isArray(itemForm.flavors)
+      ? itemForm.flavors
+      : String(itemForm.flavors).split("\n").map((s) => s.trim()).filter(Boolean);
+    const payload = {
+      ...itemForm,
+      flavors,
+      max_flavors: parseInt(itemForm.max_flavors) || 1,
+      price: parseFloat(String(itemForm.price).replace(",", ".")) || 0,
+    };
     try {
       if (editItemId) await api.put(`/admin/items/${editItemId}`, payload);
       else await api.post("/admin/items", payload);
@@ -287,6 +296,14 @@ export default function DashboardPage() {
                   />
                 </div>
               ))}
+              <label className="flex items-center gap-2 text-xs text-smoke py-2">
+                <Switch
+                  data-testid="settings-isopen-switch"
+                  checked={settings.is_open !== false}
+                  onCheckedChange={(v) => setSettings({ ...settings, is_open: v })}
+                />
+                Loja aberta agora (desative quando fechada)
+              </label>
               <Button data-testid="save-settings-button" onClick={saveSettings} className="bg-ember hover:bg-ember-dark text-white w-full">
                 Salvar Configurações
               </Button>
@@ -336,6 +353,23 @@ export default function DashboardPage() {
             <div>
               <Label className="text-[11px] uppercase tracking-widest text-smoke">Selo (opcional — ex: Top Pedido)</Label>
               <Input data-testid="item-badge-input" value={itemForm.badge} onChange={(e) => setItemForm({ ...itemForm, badge: e.target.value })} className="mt-1 bg-card2 border-white/10 text-white" />
+            </div>
+            <div>
+              <Label className="text-[11px] uppercase tracking-widest text-smoke">Sabores (um por linha — deixe vazio se não aplicável)</Label>
+              <Textarea
+                data-testid="item-flavors-input"
+                value={Array.isArray(itemForm.flavors) ? itemForm.flavors.join("\n") : itemForm.flavors}
+                onChange={(e) => setItemForm({ ...itemForm, flavors: e.target.value })}
+                className="mt-1 bg-card2 border-white/10 text-white"
+                rows={3}
+                placeholder={"Calabresa\nFrango com Catupiry\nMargherita"}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-[11px] uppercase tracking-widest text-smoke">Qtd. de sabores (1 ou 2 p/ meio a meio)</Label>
+                <Input data-testid="item-maxflavors-input" type="number" min="1" max="2" value={itemForm.max_flavors} onChange={(e) => setItemForm({ ...itemForm, max_flavors: e.target.value })} className="mt-1 bg-card2 border-white/10 text-white" />
+              </div>
             </div>
             <div className="flex items-center gap-6 pt-1">
               <label className="flex items-center gap-2 text-xs text-smoke">

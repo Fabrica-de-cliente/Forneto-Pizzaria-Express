@@ -86,6 +86,8 @@ class MenuItemIn(BaseModel):
     price_from: bool = False
     image_url: str = ""
     badge: str = ""
+    flavors: List[str] = []
+    max_flavors: int = 1
     sort_order: int = 0
     available: bool = True
 
@@ -104,6 +106,7 @@ class Settings(BaseModel):
     neighborhood: str = "Conjunto Vera Cruz"
     city: str = "Goiânia - GO"
     hours_text: str = "Entrega e Retirada"
+    is_open: bool = True
 
 
 class LoginIn(BaseModel):
@@ -294,6 +297,12 @@ async def startup():
     await db.users.create_index("email", unique=True)
     await seed_admin()
     await seed_menu()
+    # migration: flavor picker + open/closed toggle fields
+    await db.items.update_many({"flavors": {"$exists": False}}, {"$set": {"flavors": [], "max_flavors": 1}})
+    meio_cats = [c["id"] async for c in db.categories.find({"name": {"$regex": "Meio a Meio", "$options": "i"}})]
+    if meio_cats:
+        await db.items.update_many({"category_id": {"$in": meio_cats}}, {"$set": {"max_flavors": 2}})
+    await db.settings.update_one({"id": "store", "is_open": {"$exists": False}}, {"$set": {"is_open": True}})
 
 
 app.include_router(api_router)

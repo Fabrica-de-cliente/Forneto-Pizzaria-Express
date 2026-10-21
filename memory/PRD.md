@@ -30,10 +30,12 @@ The checkout process should take place via WhatsApp, and the digital menu access
 - Admin login (admin@forneto.com / forneto123 — test credentials) + dashboard: items CRUD, categories CRUD, settings (WhatsApp number, address, slogan)
 - Seed: 8 categories, 16 real items with real prices and photos (saipos CDN + Pexels)
 
+## Implemented (2026-10-21, iteration 2)
+- Flavor picker: items can have a flavors list (admin-editable, one per line); customer picks 1 flavor (or 2 for meio-a-meio) in a dialog before adding; cart/WhatsApp message includes chosen flavors. Seeded only with flavors documented on their real menu (Calabresa, Frango com Catupiry, Chocolate) — owner expands the list in admin
+- Open/closed toggle: admin switch in Configurações; menu hero shows "Aberto agora" / "Fechado no momento" badge
+
 ## Backlog
-- P0: confirm real WhatsApp number with owner
-- P1: opening-hours toggle ("aberto/fechado") on menu
+- P0: confirm real WhatsApp number with owner; owner expands flavor lists in admin
 - P1: real customer testimonials replacing placeholder
 - P2: image upload (object storage) instead of URL paste
-- P2: pizza flavor picker (sabores list) for salgadas/doces items
 - P2: order history/stats in dashboard
