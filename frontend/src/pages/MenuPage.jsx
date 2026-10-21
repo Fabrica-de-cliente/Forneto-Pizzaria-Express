@@ -11,7 +11,7 @@ const HERO_IMG =
   "https://images.pexels.com/photos/29626981/pexels-photo-29626981.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940";
 
 export default function MenuPage() {
-  const [menu, setMenu] = useState({ categories: [], items: [] });
+  const [menu, setMenu] = useState({ categories: [], items: [], addons: [], zones: [] });
   const [settings, setSettings] = useState(null);
   const [cart, setCart] = useState({});
   const [cartOpen, setCartOpen] = useState(false);
@@ -22,13 +22,21 @@ export default function MenuPage() {
     api.get("/settings").then((r) => setSettings(r.data)).catch(() => {});
   }, []);
 
-  const addToCart = (item, variant = "") => {
-    const key = variant ? `${item.id}::${variant}` : item.id;
-    setCart((c) => ({ ...c, [key]: { item, variant, qty: (c[key]?.qty || 0) + 1 } }));
+  const addToCart = (item, variant = "", addons = [], unitPrice = null) => {
+    const addonKey = addons.map((a) => a.id).sort().join("+");
+    const key = `${item.id}::${variant}::${addonKey}`;
+    const price = unitPrice ?? item.price;
+    setCart((c) => ({ ...c, [key]: { item, variant, addons, unitPrice: price, qty: (c[key]?.qty || 0) + 1 } }));
     toast.success(variant ? `${item.name} (${variant}) adicionada` : `${item.name} adicionado ao pedido`);
   };
+  const pizzaCatIds = useMemo(
+    () => new Set(menu.categories.filter((c) => c.group === "pizzas").map((c) => c.id)),
+    [menu.categories]
+  );
   const handleAdd = (item) => {
-    if (item.flavors && item.flavors.length > 0) setFlavorItem(item);
+    const hasFlavors = (item.flavors || []).length > 0;
+    const isPizzaWithAddons = pizzaCatIds.has(item.category_id) && menu.addons.length > 0;
+    if (hasFlavors || isPizzaWithAddons) setFlavorItem(item);
     else addToCart(item);
   };
   const changeQty = (key, qty) =>
@@ -257,12 +265,14 @@ export default function MenuPage() {
         onChangeQty={changeQty}
         onRemove={removeItem}
         settings={settings}
+        zones={menu.zones}
       />
       <FlavorDialog
         item={flavorItem}
+        addons={menu.addons}
         onClose={() => setFlavorItem(null)}
-        onConfirm={(variant) => {
-          addToCart(flavorItem, variant);
+        onConfirm={(variant, addons, unitPrice) => {
+          addToCart(flavorItem, variant, addons, unitPrice);
           setFlavorItem(null);
         }}
       />

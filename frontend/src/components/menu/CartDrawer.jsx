@@ -4,29 +4,39 @@ import { Minus, Plus, Trash2, X, MessageCircle } from "lucide-react";
 
 const slug = (s) => s.replace(/[^a-zA-Z0-9]/g, "-").slice(0, 40);
 
-export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, settings }) {
+export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, settings, zones = [] }) {
   const [name, setName] = useState("");
   const [mode, setMode] = useState("entrega");
+  const [zoneId, setZoneId] = useState("");
   const [notes, setNotes] = useState("");
 
   const lines = Object.entries(cart)
     .map(([key, e]) => ({ key, ...e }))
     .filter((l) => l.qty > 0);
-  const total = lines.reduce((s, l) => s + l.item.price * l.qty, 0);
-
-  const lineName = (l) => (l.variant ? `${l.item.name} (${l.variant})` : l.item.name);
+  const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.qty, 0);
+  const selectedZone = zones.find((z) => z.id === zoneId);
+  const fee = mode === "entrega" && selectedZone ? selectedZone.fee : 0;
+  const otherZone = mode === "entrega" && zoneId === "outro";
+  const total = subtotal + fee;
 
   const checkout = () => {
     const parts = [
       "*Novo Pedido — Forneto Pizzaria Express*",
       "--------------------------",
-      ...lines.map((l) => `${l.qty}x ${lineName(l)} — ${brl(l.item.price * l.qty)}`),
+      ...lines.flatMap((l) => {
+        const base = `${l.qty}x ${l.item.name}${l.variant ? ` (${l.variant})` : ""} — ${brl(l.unitPrice * l.qty)}`;
+        const extras = (l.addons || []).map((a) => `   + ${a.name} (${brl(a.price)})`);
+        return [base, ...extras];
+      }),
       "--------------------------",
-      `*Total: ${brl(total)}*`,
-      "",
-      `Nome: ${name || "-"}`,
-      `Tipo: ${mode === "entrega" ? "Entrega" : "Retirada no balcão"}`,
+      `Subtotal: ${brl(subtotal)}`,
     ];
+    if (mode === "entrega") {
+      if (selectedZone) parts.push(`Entrega (${selectedZone.neighborhood}): ${brl(fee)}`);
+      if (otherZone) parts.push("Entrega: outro bairro (taxa a combinar)");
+    }
+    parts.push(`*Total: ${brl(total)}*`, "", `Nome: ${name || "-"}`);
+    parts.push(`Tipo: ${mode === "entrega" ? "Entrega" : "Retirada no balcão"}`);
     if (notes) parts.push(`Obs: ${notes}`);
     const url = `https://wa.me/${settings.whatsapp_number}?text=${encodeURIComponent(parts.join("\n"))}`;
     window.open(url, "_blank", "noopener");
@@ -64,8 +74,11 @@ export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, setting
             >
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-white">{l.item.name}</p>
-                {l.variant && <p className="text-[10px] text-ash truncate">Sabor: {l.variant}</p>}
-                <p className="mono-badge text-[11px] text-ember font-bold">{brl(l.item.price)}</p>
+                {l.variant && <p className="text-[10px] text-ash">Sabor: {l.variant}</p>}
+                {(l.addons || []).map((a) => (
+                  <p key={a.id} className="text-[10px] text-ash">+ {a.name} ({brl(a.price)})</p>
+                ))}
+                <p className="mono-badge text-[11px] text-ember font-bold">{brl(l.unitPrice)}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -126,6 +139,22 @@ export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, setting
                   </button>
                 ))}
               </div>
+              {mode === "entrega" && zones.length > 0 && (
+                <select
+                  data-testid="cart-zone-select"
+                  value={zoneId}
+                  onChange={(e) => setZoneId(e.target.value)}
+                  className="w-full bg-card2 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-ember"
+                >
+                  <option value="">Selecione seu bairro</option>
+                  {zones.map((z) => (
+                    <option key={z.id} value={z.id} data-testid={`zone-option-${z.id}`}>
+                      {z.neighborhood} — taxa {brl(z.fee)}
+                    </option>
+                  ))}
+                  <option value="outro">Outro bairro (taxa a combinar)</option>
+                </select>
+              )}
               <textarea
                 data-testid="cart-notes-input"
                 value={notes}
@@ -138,8 +167,23 @@ export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, setting
           )}
         </div>
 
-        <div className="p-5 border-t border-white/10 space-y-3">
-          <div className="flex justify-between items-center">
+        <div className="p-5 border-t border-white/10 space-y-2">
+          <div className="flex justify-between items-center text-xs text-smoke">
+            <span>Subtotal</span>
+            <span className="mono-badge" data-testid="cart-subtotal">{brl(subtotal)}</span>
+          </div>
+          {mode === "entrega" && selectedZone && (
+            <div className="flex justify-between items-center text-xs text-smoke">
+              <span>Entrega — {selectedZone.neighborhood}</span>
+              <span className="mono-badge" data-testid="cart-fee">{brl(fee)}</span>
+            </div>
+          )}
+          {mode === "entrega" && otherZone && (
+            <p className="text-[10px] text-amber-400" data-testid="cart-fee-pending">
+              Taxa de entrega a combinar no WhatsApp
+            </p>
+          )}
+          <div className="flex justify-between items-center pt-1">
             <span className="text-xs uppercase tracking-widest text-smoke font-bold">Total</span>
             <span className="mono-badge text-xl font-black text-ember" data-testid="cart-total">
               {brl(total)}

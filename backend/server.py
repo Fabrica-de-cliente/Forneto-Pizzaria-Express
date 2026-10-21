@@ -109,6 +109,26 @@ class Settings(BaseModel):
     is_open: bool = True
 
 
+class AddonIn(BaseModel):
+    name: str
+    price: float
+    active: bool = True
+
+
+class Addon(AddonIn):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+
+
+class ZoneIn(BaseModel):
+    neighborhood: str
+    fee: float
+    active: bool = True
+
+
+class Zone(ZoneIn):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+
+
 class LoginIn(BaseModel):
     email: str
     password: str
@@ -124,7 +144,9 @@ async def root():
 async def get_menu():
     categories = await db.categories.find({"active": True}, {"_id": 0}).sort("sort_order", 1).to_list(100)
     items = await db.items.find({"available": True}, {"_id": 0}).sort("sort_order", 1).to_list(500)
-    return {"categories": categories, "items": items}
+    addons = await db.addons.find({"active": True}, {"_id": 0}).to_list(100)
+    zones = await db.delivery_zones.find({"active": True}, {"_id": 0}).sort("neighborhood", 1).to_list(200)
+    return {"categories": categories, "items": items, "addons": addons, "zones": zones}
 
 
 @api_router.get("/settings")
@@ -204,6 +226,60 @@ async def admin_update_item(item_id: str, body: MenuItemIn, admin=Depends(get_ad
 @api_router.delete("/admin/items/{item_id}")
 async def admin_delete_item(item_id: str, admin=Depends(get_admin)):
     await db.items.delete_one({"id": item_id})
+    return {"ok": True}
+
+
+# ---------- Admin: add-ons (bordas, extras) ----------
+@api_router.get("/admin/addons", response_model=List[Addon])
+async def admin_list_addons(admin=Depends(get_admin)):
+    return await db.addons.find({}, {"_id": 0}).to_list(100)
+
+
+@api_router.post("/admin/addons", response_model=Addon)
+async def admin_create_addon(body: AddonIn, admin=Depends(get_admin)):
+    addon = Addon(**body.model_dump())
+    await db.addons.insert_one(addon.model_dump())
+    return addon
+
+
+@api_router.put("/admin/addons/{addon_id}", response_model=Addon)
+async def admin_update_addon(addon_id: str, body: AddonIn, admin=Depends(get_admin)):
+    res = await db.addons.update_one({"id": addon_id}, {"$set": body.model_dump()})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Adicional não encontrado")
+    return await db.addons.find_one({"id": addon_id}, {"_id": 0})
+
+
+@api_router.delete("/admin/addons/{addon_id}")
+async def admin_delete_addon(addon_id: str, admin=Depends(get_admin)):
+    await db.addons.delete_one({"id": addon_id})
+    return {"ok": True}
+
+
+# ---------- Admin: delivery zones (taxa por bairro) ----------
+@api_router.get("/admin/zones", response_model=List[Zone])
+async def admin_list_zones(admin=Depends(get_admin)):
+    return await db.delivery_zones.find({}, {"_id": 0}).sort("neighborhood", 1).to_list(200)
+
+
+@api_router.post("/admin/zones", response_model=Zone)
+async def admin_create_zone(body: ZoneIn, admin=Depends(get_admin)):
+    zone = Zone(**body.model_dump())
+    await db.delivery_zones.insert_one(zone.model_dump())
+    return zone
+
+
+@api_router.put("/admin/zones/{zone_id}", response_model=Zone)
+async def admin_update_zone(zone_id: str, body: ZoneIn, admin=Depends(get_admin)):
+    res = await db.delivery_zones.update_one({"id": zone_id}, {"$set": body.model_dump()})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Bairro não encontrado")
+    return await db.delivery_zones.find_one({"id": zone_id}, {"_id": 0})
+
+
+@api_router.delete("/admin/zones/{zone_id}")
+async def admin_delete_zone(zone_id: str, admin=Depends(get_admin)):
+    await db.delivery_zones.delete_one({"id": zone_id})
     return {"ok": True}
 
 

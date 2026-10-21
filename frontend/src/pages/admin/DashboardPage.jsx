@@ -23,6 +23,8 @@ const EMPTY_ITEM = {
   flavors: [], max_flavors: 1,
 };
 const EMPTY_CAT = { name: "", group: "pizzas", sort_order: 0, active: true };
+const EMPTY_ADDON = { name: "", price: "", active: true };
+const EMPTY_ZONE = { neighborhood: "", fee: "", active: true };
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -30,6 +32,16 @@ export default function DashboardPage() {
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [settings, setSettings] = useState(null);
+  const [addons, setAddons] = useState([]);
+  const [zones, setZones] = useState([]);
+
+  const [addonDialog, setAddonDialog] = useState(false);
+  const [addonForm, setAddonForm] = useState(EMPTY_ADDON);
+  const [editAddonId, setEditAddonId] = useState(null);
+
+  const [zoneDialog, setZoneDialog] = useState(false);
+  const [zoneForm, setZoneForm] = useState(EMPTY_ZONE);
+  const [editZoneId, setEditZoneId] = useState(null);
 
   const [itemDialog, setItemDialog] = useState(false);
   const [itemForm, setItemForm] = useState(EMPTY_ITEM);
@@ -41,14 +53,18 @@ export default function DashboardPage() {
 
   const load = useCallback(async () => {
     try {
-      const [cats, its, st] = await Promise.all([
+      const [cats, its, st, ads, zns] = await Promise.all([
         api.get("/admin/categories"),
         api.get("/admin/items"),
         api.get("/settings"),
+        api.get("/admin/addons"),
+        api.get("/admin/zones"),
       ]);
       setCategories(cats.data);
       setItems(its.data);
       setSettings(st.data);
+      setAddons(ads.data);
+      setZones(zns.data);
     } catch (e) {
       if (e?.response?.status === 401) {
         localStorage.removeItem("forneto_token");
@@ -152,6 +168,44 @@ export default function DashboardPage() {
     }
   };
 
+  // ----- addons -----
+  const openNewAddon = () => { setEditAddonId(null); setAddonForm(EMPTY_ADDON); setAddonDialog(true); };
+  const openEditAddon = (a) => { setEditAddonId(a.id); setAddonForm({ ...a, price: String(a.price) }); setAddonDialog(true); };
+  const saveAddon = async () => {
+    const payload = { ...addonForm, price: parseFloat(String(addonForm.price).replace(",", ".")) || 0 };
+    try {
+      if (editAddonId) await api.put(`/admin/addons/${editAddonId}`, payload);
+      else await api.post("/admin/addons", payload);
+      toast.success(editAddonId ? "Adicional atualizado" : "Adicional criado");
+      setAddonDialog(false);
+      load();
+    } catch (e) { toast.error(apiError(e)); }
+  };
+  const deleteAddon = async (id) => {
+    if (!window.confirm("Excluir este adicional?")) return;
+    try { await api.delete(`/admin/addons/${id}`); toast.success("Adicional excluído"); load(); }
+    catch (e) { toast.error(apiError(e)); }
+  };
+
+  // ----- zones -----
+  const openNewZone = () => { setEditZoneId(null); setZoneForm(EMPTY_ZONE); setZoneDialog(true); };
+  const openEditZone = (z) => { setEditZoneId(z.id); setZoneForm({ ...z, fee: String(z.fee) }); setZoneDialog(true); };
+  const saveZone = async () => {
+    const payload = { ...zoneForm, fee: parseFloat(String(zoneForm.fee).replace(",", ".")) || 0 };
+    try {
+      if (editZoneId) await api.put(`/admin/zones/${editZoneId}`, payload);
+      else await api.post("/admin/zones", payload);
+      toast.success(editZoneId ? "Bairro atualizado" : "Bairro criado");
+      setZoneDialog(false);
+      load();
+    } catch (e) { toast.error(apiError(e)); }
+  };
+  const deleteZone = async (id) => {
+    if (!window.confirm("Excluir este bairro?")) return;
+    try { await api.delete(`/admin/zones/${id}`); toast.success("Bairro excluído"); load(); }
+    catch (e) { toast.error(apiError(e)); }
+  };
+
   if (!ready || !settings) {
     return (
       <div className="min-h-screen bg-ink flex items-center justify-center" data-testid="dashboard-loading">
@@ -194,6 +248,8 @@ export default function DashboardPage() {
           <TabsList className="bg-surface2 border border-white/10">
             <TabsTrigger data-testid="tab-items" value="items">Itens do Cardápio</TabsTrigger>
             <TabsTrigger data-testid="tab-categories" value="categories">Categorias</TabsTrigger>
+            <TabsTrigger data-testid="tab-addons" value="addons">Bordas & Adicionais</TabsTrigger>
+            <TabsTrigger data-testid="tab-zones" value="zones">Taxas de Entrega</TabsTrigger>
             <TabsTrigger data-testid="tab-settings" value="settings">Configurações</TabsTrigger>
           </TabsList>
 
@@ -265,6 +321,70 @@ export default function DashboardPage() {
                     <Pencil className="w-4 h-4" />
                   </Button>
                   <Button data-testid={`delete-category-${cat.id}`} size="icon" variant="ghost" onClick={() => deleteCat(cat.id)} className="text-red-400 hover:text-red-300">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* ADDONS */}
+          <TabsContent value="addons" className="mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-xs text-smoke">{addons.length} adicionais (bordas recheadas, extras)</p>
+              <Button data-testid="new-addon-button" onClick={openNewAddon} className="bg-ember hover:bg-ember-dark text-white">
+                <Plus className="w-4 h-4 mr-1" /> Novo Adicional
+              </Button>
+            </div>
+            {addons.length === 0 && (
+              <p className="text-xs text-smoke bg-surface2 border border-white/10 rounded-xl p-4" data-testid="addons-empty">
+                Nenhum adicional cadastrado. Ex: Borda Recheada de Catupiry — R$ 10,00.
+              </p>
+            )}
+            <div className="space-y-2">
+              {addons.map((a) => (
+                <div key={a.id} data-testid={`admin-addon-${a.id}`} className="flex items-center gap-4 bg-surface2 border border-white/10 rounded-xl p-4">
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-white">{a.name}</p>
+                    <p className="text-[11px] text-smoke">{a.active ? "Ativo" : "Oculto"}</p>
+                  </div>
+                  <span className="mono-badge text-sm font-bold text-ember">+ {brl(a.price)}</span>
+                  <Button data-testid={`edit-addon-${a.id}`} size="icon" variant="ghost" onClick={() => openEditAddon(a)} className="text-smoke hover:text-white">
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button data-testid={`delete-addon-${a.id}`} size="icon" variant="ghost" onClick={() => deleteAddon(a.id)} className="text-red-400 hover:text-red-300">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* DELIVERY ZONES */}
+          <TabsContent value="zones" className="mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-xs text-smoke">{zones.length} bairros com taxa cadastrada</p>
+              <Button data-testid="new-zone-button" onClick={openNewZone} className="bg-ember hover:bg-ember-dark text-white">
+                <Plus className="w-4 h-4 mr-1" /> Novo Bairro
+              </Button>
+            </div>
+            {zones.length === 0 && (
+              <p className="text-xs text-smoke bg-surface2 border border-white/10 rounded-xl p-4" data-testid="zones-empty">
+                Nenhum bairro cadastrado. Cadastre os bairros atendidos e a taxa de cada um — o cliente escolhe o bairro na sacola e a taxa entra no total.
+              </p>
+            )}
+            <div className="space-y-2">
+              {zones.map((z) => (
+                <div key={z.id} data-testid={`admin-zone-${z.id}`} className="flex items-center gap-4 bg-surface2 border border-white/10 rounded-xl p-4">
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-white">{z.neighborhood}</p>
+                    <p className="text-[11px] text-smoke">{z.active ? "Ativo" : "Oculto"}</p>
+                  </div>
+                  <span className="mono-badge text-sm font-bold text-ember">{brl(z.fee)}</span>
+                  <Button data-testid={`edit-zone-${z.id}`} size="icon" variant="ghost" onClick={() => openEditZone(z)} className="text-smoke hover:text-white">
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button data-testid={`delete-zone-${z.id}`} size="icon" variant="ghost" onClick={() => deleteZone(z.id)} className="text-red-400 hover:text-red-300">
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -427,6 +547,61 @@ export default function DashboardPage() {
           <DialogFooter>
             <Button data-testid="save-category-button" onClick={saveCat} className="bg-ember hover:bg-ember-dark text-white w-full">
               {editCatId ? "Salvar Alterações" : "Criar Categoria"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* ADDON DIALOG */}
+      <Dialog open={addonDialog} onOpenChange={setAddonDialog}>
+        <DialogContent className="bg-surface2 border-white/10 text-cream max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">{editAddonId ? "Editar Adicional" : "Novo Adicional"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-[11px] uppercase tracking-widest text-smoke">Nome (ex: Borda Recheada de Catupiry)</Label>
+              <Input data-testid="addon-name-input" value={addonForm.name} onChange={(e) => setAddonForm({ ...addonForm, name: e.target.value })} className="mt-1 bg-card2 border-white/10 text-white" />
+            </div>
+            <div>
+              <Label className="text-[11px] uppercase tracking-widest text-smoke">Acréscimo (R$)</Label>
+              <Input data-testid="addon-price-input" value={addonForm.price} onChange={(e) => setAddonForm({ ...addonForm, price: e.target.value })} className="mt-1 bg-card2 border-white/10 text-white" placeholder="0,00" />
+            </div>
+            <label className="flex items-center gap-2 text-xs text-smoke">
+              <Switch data-testid="addon-active-switch" checked={addonForm.active} onCheckedChange={(v) => setAddonForm({ ...addonForm, active: v })} />
+              Disponível no cardápio
+            </label>
+          </div>
+          <DialogFooter>
+            <Button data-testid="save-addon-button" onClick={saveAddon} className="bg-ember hover:bg-ember-dark text-white w-full">
+              {editAddonId ? "Salvar Alterações" : "Criar Adicional"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ZONE DIALOG */}
+      <Dialog open={zoneDialog} onOpenChange={setZoneDialog}>
+        <DialogContent className="bg-surface2 border-white/10 text-cream max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">{editZoneId ? "Editar Bairro" : "Novo Bairro"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-[11px] uppercase tracking-widest text-smoke">Bairro</Label>
+              <Input data-testid="zone-name-input" value={zoneForm.neighborhood} onChange={(e) => setZoneForm({ ...zoneForm, neighborhood: e.target.value })} className="mt-1 bg-card2 border-white/10 text-white" placeholder="Ex: Conjunto Vera Cruz" />
+            </div>
+            <div>
+              <Label className="text-[11px] uppercase tracking-widest text-smoke">Taxa de entrega (R$)</Label>
+              <Input data-testid="zone-fee-input" value={zoneForm.fee} onChange={(e) => setZoneForm({ ...zoneForm, fee: e.target.value })} className="mt-1 bg-card2 border-white/10 text-white" placeholder="0,00" />
+            </div>
+            <label className="flex items-center gap-2 text-xs text-smoke">
+              <Switch data-testid="zone-active-switch" checked={zoneForm.active} onCheckedChange={(v) => setZoneForm({ ...zoneForm, active: v })} />
+              Atendemos este bairro
+            </label>
+          </div>
+          <DialogFooter>
+            <Button data-testid="save-zone-button" onClick={saveZone} className="bg-ember hover:bg-ember-dark text-white w-full">
+              {editZoneId ? "Salvar Alterações" : "Criar Bairro"}
             </Button>
           </DialogFooter>
         </DialogContent>
