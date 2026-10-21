@@ -39,7 +39,7 @@ The checkout process should take place via WhatsApp, and the digital menu access
 - Full REAL flavor lists loaded from the pizzeria's Anota AI store: 29 savory + 9 sweet flavors on size items; meio-a-meio picks 2
 - Paid add-ons (bordas/adicionais): admin CRUD tab; customer multi-selects in the flavor dialog; price adds automatically to the line, total and WhatsApp message
 - Delivery fee by neighborhood: admin CRUD tab (bairro → taxa); customer picks bairro in cart on "Entrega"; fee shown, summed into total and itemized in WhatsApp message; "Outro bairro" fallback = taxa a combinar
-- Addons/zones ship EMPTY (no fabricated prices) — owner fills real values in admin
+- Addons ship EMPTY (owner skipped providing real borda/addon prices 2026-10-21 — matches their Anota AI store which sells no add-ons); zones: only "Conjunto Vera Cruz" at R$ 0,00 as stated default (owner adjusts in admin)
 
 ## Implemented (2026-10-21, iteration 4)
 - Per-flavor pricing: flavors are {name, price?}; admin enters "Nome = 45,00" per line; dialog shows each flavor's price; highest selected price wins for meio-a-meio; real Anota AI prices seeded for Salgada G (R$25–50) and Doce G (R$45); P sizes and meio-a-meio keep base "a partir de" prices
