@@ -78,6 +78,11 @@ class Category(CategoryIn):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
 
+class Flavor(BaseModel):
+    name: str
+    price: Optional[float] = None  # absolute price override for this flavor; None = base item price
+
+
 class MenuItemIn(BaseModel):
     category_id: str
     name: str
@@ -86,7 +91,7 @@ class MenuItemIn(BaseModel):
     price_from: bool = False
     image_url: str = ""
     badge: str = ""
-    flavors: List[str] = []
+    flavors: List[Flavor] = []
     max_flavors: int = 1
     sort_order: int = 0
     available: bool = True
@@ -127,6 +132,36 @@ class ZoneIn(BaseModel):
 
 class Zone(ZoneIn):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+
+
+class OrderLine(BaseModel):
+    name: str
+    variant: str = ""
+    addons: List[str] = []
+    qty: int
+    unit_price: float
+
+
+class OrderIn(BaseModel):
+    customer_name: str = ""
+    mode: str = "entrega"  # entrega | retirada
+    neighborhood: str = ""
+    payment: str = ""
+    change_for: Optional[float] = None
+    lines: List[OrderLine]
+    subtotal: float
+    fee: float = 0
+    total: float
+
+
+class Order(OrderIn):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    status: str = "novo"  # novo | preparo | entrega | concluido
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class OrderStatusIn(BaseModel):
+    status: str
 
 
 class LoginIn(BaseModel):
@@ -227,6 +262,29 @@ async def admin_update_item(item_id: str, body: MenuItemIn, admin=Depends(get_ad
 async def admin_delete_item(item_id: str, admin=Depends(get_admin)):
     await db.items.delete_one({"id": item_id})
     return {"ok": True}
+
+
+# ---------- Orders ----------
+@api_router.post("/orders", response_model=Order)
+async def create_order(body: OrderIn):
+    order = Order(**body.model_dump())
+    await db.orders.insert_one(order.model_dump())
+    return order
+
+
+@api_router.get("/admin/orders", response_model=List[Order])
+async def admin_list_orders(admin=Depends(get_admin)):
+    return await db.orders.find({}, {"_id": 0}).sort("created_at", -1).to_list(300)
+
+
+@api_router.put("/admin/orders/{order_id}", response_model=Order)
+async def admin_update_order_status(order_id: str, body: OrderStatusIn, admin=Depends(get_admin)):
+    if body.status not in ("novo", "preparo", "entrega", "concluido"):
+        raise HTTPException(status_code=400, detail="Status inválido")
+    res = await db.orders.update_one({"id": order_id}, {"$set": {"status": body.status}})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Pedido não encontrado")
+    return await db.orders.find_one({"id": order_id}, {"_id": 0})
 
 
 # ---------- Admin: add-ons (bordas, extras) ----------
@@ -379,6 +437,13 @@ async def startup():
     if meio_cats:
         await db.items.update_many({"category_id": {"$in": meio_cats}}, {"$set": {"max_flavors": 2}})
     await db.settings.update_one({"id": "store", "is_open": {"$exists": False}}, {"$set": {"is_open": True}})
+    # migration: flavor strings -> flavor objects
+    async for item in db.items.find({"flavors.0": {"$exists": True}}):
+        if isinstance(item["flavors"][0], str):
+            await db.items.update_one(
+                {"id": item["id"]},
+                {"$set": {"flavors": [{"name": f, "price": None} for f in item["flavors"]]}},
+            )
 
 
 app.include_router(api_router)

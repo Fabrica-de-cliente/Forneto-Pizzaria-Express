@@ -17,7 +17,7 @@ export function FlavorDialog({ item, addons = [], onConfirm, onClose }) {
 
   const toggle = (f) => {
     setSelected((s) => {
-      if (s.includes(f)) return s.filter((x) => x !== f);
+      if (s.find((x) => x.name === f.name)) return s.filter((x) => x.name !== f.name);
       if (s.length >= max) return max === 1 ? [f] : s;
       return [...s, f];
     });
@@ -26,8 +26,11 @@ export function FlavorDialog({ item, addons = [], onConfirm, onClose }) {
   const toggleAddon = (a) =>
     setPickedAddons((s) => (s.find((x) => x.id === a.id) ? s.filter((x) => x.id !== a.id) : [...s, a]));
 
+  // flavor pricing: highest selected flavor price wins (regra da casa padrão); sem preço = valor base
+  const flavorPrices = selected.map((f) => f.price).filter((p) => p != null);
+  const basePrice = flavorPrices.length ? Math.max(...flavorPrices) : item.price;
   const addonsTotal = pickedAddons.reduce((s, a) => s + a.price, 0);
-  const unitPrice = item.price + addonsTotal;
+  const unitPrice = basePrice + addonsTotal;
   const canConfirm = !hasFlavors || selected.length === max;
 
   return (
@@ -48,7 +51,7 @@ export function FlavorDialog({ item, addons = [], onConfirm, onClose }) {
         <p className="text-[11px] text-smoke mb-4">
           {hasFlavors
             ? max === 2
-              ? "Escolha 2 sabores (meio a meio)"
+              ? "Escolha 2 sabores (vale o maior valor)"
               : "Escolha o sabor"
             : "Monte sua pizza"}{" "}
           · {brl(item.price)}
@@ -58,12 +61,12 @@ export function FlavorDialog({ item, addons = [], onConfirm, onClose }) {
         {hasFlavors && (
           <div className="max-h-56 overflow-y-auto space-y-2 mb-5">
             {item.flavors.map((f) => {
-              const active = selected.includes(f);
+              const active = !!selected.find((x) => x.name === f.name);
               return (
                 <button
-                  key={f}
+                  key={f.name}
                   type="button"
-                  data-testid={`flavor-option-${f.replace(/[^a-zA-Z0-9]/g, "-")}`}
+                  data-testid={`flavor-option-${f.name.replace(/[^a-zA-Z0-9]/g, "-")}`}
                   onClick={() => toggle(f)}
                   className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border text-xs font-bold transition-colors ${
                     active
@@ -71,8 +74,13 @@ export function FlavorDialog({ item, addons = [], onConfirm, onClose }) {
                       : "bg-card2 border-white/10 text-cream hover:border-ember/50"
                   }`}
                 >
-                  <span>{f}</span>
-                  {active && <Check className="w-3.5 h-3.5" />}
+                  <span className="flex items-center gap-2">
+                    {f.name}
+                    {active && <Check className="w-3.5 h-3.5" />}
+                  </span>
+                  {f.price != null && (
+                    <span className={`mono-badge ${active ? "text-white" : "text-ember"}`}>{brl(f.price)}</span>
+                  )}
                 </button>
               );
             })}
@@ -115,7 +123,7 @@ export function FlavorDialog({ item, addons = [], onConfirm, onClose }) {
           type="button"
           data-testid="flavor-confirm-button"
           disabled={!canConfirm}
-          onClick={() => onConfirm(selected.join(" / "), pickedAddons, unitPrice)}
+          onClick={() => onConfirm(selected.map((f) => f.name).join(" / "), pickedAddons, unitPrice)}
           className="w-full bg-ember hover:bg-ember-dark disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold uppercase text-xs tracking-wider transition-colors"
         >
           Adicionar — {brl(unitPrice)}

@@ -1,14 +1,24 @@
 import { useState } from "react";
+import { api } from "@/lib/api";
 import { brl } from "@/lib/format";
 import { Minus, Plus, Trash2, X, MessageCircle } from "lucide-react";
 
 const slug = (s) => s.replace(/[^a-zA-Z0-9]/g, "-").slice(0, 40);
 
+const PAYMENTS = [
+  { v: "Pix", l: "Pix" },
+  { v: "Cartão", l: "Cartão" },
+  { v: "Dinheiro", l: "Dinheiro" },
+];
+
 export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, settings, zones = [] }) {
   const [name, setName] = useState("");
   const [mode, setMode] = useState("entrega");
   const [zoneId, setZoneId] = useState("");
+  const [payment, setPayment] = useState("");
+  const [changeFor, setChangeFor] = useState("");
   const [notes, setNotes] = useState("");
+  const [sending, setSending] = useState(false);
 
   const lines = Object.entries(cart)
     .map(([key, e]) => ({ key, ...e }))
@@ -19,7 +29,8 @@ export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, setting
   const otherZone = mode === "entrega" && zoneId === "outro";
   const total = subtotal + fee;
 
-  const checkout = () => {
+  const checkout = async () => {
+    setSending(true);
     const parts = [
       "*Novo Pedido — Forneto Pizzaria Express*",
       "--------------------------",
@@ -37,9 +48,39 @@ export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, setting
     }
     parts.push(`*Total: ${brl(total)}*`, "", `Nome: ${name || "-"}`);
     parts.push(`Tipo: ${mode === "entrega" ? "Entrega" : "Retirada no balcão"}`);
+    if (payment) {
+      let payLine = `Pagamento: ${payment}`;
+      if (payment === "Dinheiro" && changeFor) payLine += ` (troco para ${brl(parseFloat(changeFor.replace(",", ".")) || 0)})`;
+      parts.push(payLine);
+    }
     if (notes) parts.push(`Obs: ${notes}`);
+
+    // registra o pedido no dashboard da equipe (não bloqueia o envio)
+    try {
+      await api.post("/orders", {
+        customer_name: name,
+        mode,
+        neighborhood: selectedZone ? selectedZone.neighborhood : otherZone ? "Outro bairro" : "",
+        payment,
+        change_for: payment === "Dinheiro" && changeFor ? parseFloat(changeFor.replace(",", ".")) || null : null,
+        lines: lines.map((l) => ({
+          name: l.item.name,
+          variant: l.variant || "",
+          addons: (l.addons || []).map((a) => `${a.name} (${brl(a.price)})`),
+          qty: l.qty,
+          unit_price: l.unitPrice,
+        })),
+        subtotal,
+        fee,
+        total,
+      });
+    } catch (e) {
+      /* pedido segue pelo WhatsApp mesmo se o registro falhar */
+    }
+
     const url = `https://wa.me/${settings.whatsapp_number}?text=${encodeURIComponent(parts.join("\n"))}`;
     window.open(url, "_blank", "noopener");
+    setSending(false);
   };
 
   if (!open) return null;
@@ -155,6 +196,35 @@ export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, setting
                   <option value="outro">Outro bairro (taxa a combinar)</option>
                 </select>
               )}
+              <div>
+                <p className="mono-badge text-[10px] font-bold uppercase tracking-widest text-smoke mb-2">Pagamento</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {PAYMENTS.map((o) => (
+                    <button
+                      key={o.v}
+                      type="button"
+                      data-testid={`cart-payment-${o.v.toLowerCase()}`}
+                      onClick={() => setPayment(payment === o.v ? "" : o.v)}
+                      className={`py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider border transition-colors ${
+                        payment === o.v
+                          ? "bg-ember border-ember text-white"
+                          : "bg-card2 border-white/10 text-smoke hover:text-white"
+                      }`}
+                    >
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+                {payment === "Dinheiro" && (
+                  <input
+                    data-testid="cart-change-input"
+                    value={changeFor}
+                    onChange={(e) => setChangeFor(e.target.value)}
+                    placeholder="Troco para quanto? (opcional)"
+                    className="w-full mt-2 bg-card2 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder:text-smoke focus:outline-none focus:border-ember"
+                  />
+                )}
+              </div>
               <textarea
                 data-testid="cart-notes-input"
                 value={notes}
@@ -197,7 +267,7 @@ export function CartDrawer({ open, onClose, cart, onChangeQty, onRemove, setting
             className="w-full inline-flex items-center justify-center gap-2 bg-ember hover:bg-ember-dark disabled:opacity-40 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider transition-colors shadow-lg shadow-ember/20"
           >
             <MessageCircle className="w-4 h-4" />
-            Enviar Pedido no WhatsApp
+            {sending ? "Enviando..." : "Enviar Pedido no WhatsApp"}
           </button>
         </div>
       </aside>

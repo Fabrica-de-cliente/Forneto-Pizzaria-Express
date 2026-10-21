@@ -26,6 +26,32 @@ const EMPTY_CAT = { name: "", group: "pizzas", sort_order: 0, active: true };
 const EMPTY_ADDON = { name: "", price: "", active: true };
 const EMPTY_ZONE = { neighborhood: "", fee: "", active: true };
 
+const flavorsToText = (fl) =>
+  (fl || [])
+    .map((f) => (f.price != null ? `${f.name} = ${f.price.toFixed(2).replace(".", ",")}` : f.name))
+    .join("\n");
+
+const textToFlavors = (t) =>
+  String(t)
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => {
+      const parts = l.split("=");
+      if (parts.length > 1) {
+        const p = parseFloat(parts[parts.length - 1].trim().replace(",", "."));
+        return { name: parts.slice(0, -1).join("=").trim(), price: isNaN(p) ? null : p };
+      }
+      return { name: l, price: null };
+    });
+
+const ORDER_STATUS = {
+  novo: { label: "Novo", cls: "bg-amber-500/15 text-amber-400" },
+  preparo: { label: "Em preparo", cls: "bg-blue-500/15 text-blue-400" },
+  entrega: { label: "Saiu p/ entrega", cls: "bg-purple-500/15 text-purple-400" },
+  concluido: { label: "Concluído", cls: "bg-green-500/15 text-green-400" },
+};
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
@@ -34,6 +60,7 @@ export default function DashboardPage() {
   const [settings, setSettings] = useState(null);
   const [addons, setAddons] = useState([]);
   const [zones, setZones] = useState([]);
+  const [orders, setOrders] = useState([]);
 
   const [addonDialog, setAddonDialog] = useState(false);
   const [addonForm, setAddonForm] = useState(EMPTY_ADDON);
@@ -53,18 +80,20 @@ export default function DashboardPage() {
 
   const load = useCallback(async () => {
     try {
-      const [cats, its, st, ads, zns] = await Promise.all([
+      const [cats, its, st, ads, zns, ords] = await Promise.all([
         api.get("/admin/categories"),
         api.get("/admin/items"),
         api.get("/settings"),
         api.get("/admin/addons"),
         api.get("/admin/zones"),
+        api.get("/admin/orders"),
       ]);
       setCategories(cats.data);
       setItems(its.data);
       setSettings(st.data);
       setAddons(ads.data);
       setZones(zns.data);
+      setOrders(ords.data);
     } catch (e) {
       if (e?.response?.status === 401) {
         localStorage.removeItem("forneto_token");
@@ -97,7 +126,7 @@ export default function DashboardPage() {
   const saveItem = async () => {
     const flavors = Array.isArray(itemForm.flavors)
       ? itemForm.flavors
-      : String(itemForm.flavors).split("\n").map((s) => s.trim()).filter(Boolean);
+      : textToFlavors(itemForm.flavors);
     const payload = {
       ...itemForm,
       flavors,
@@ -166,6 +195,15 @@ export default function DashboardPage() {
     } catch (e) {
       toast.error(apiError(e));
     }
+  };
+
+  // ----- orders -----
+  const setOrderStatus = async (id, status) => {
+    try {
+      await api.put(`/admin/orders/${id}`, { status });
+      toast.success("Status atualizado");
+      load();
+    } catch (e) { toast.error(apiError(e)); }
   };
 
   // ----- addons -----
@@ -246,12 +284,68 @@ export default function DashboardPage() {
       <main className="max-w-6xl mx-auto px-6 py-8">
         <Tabs defaultValue="items">
           <TabsList className="bg-surface2 border border-white/10">
+            <TabsTrigger data-testid="tab-orders" value="orders">Pedidos</TabsTrigger>
             <TabsTrigger data-testid="tab-items" value="items">Itens do Cardápio</TabsTrigger>
             <TabsTrigger data-testid="tab-categories" value="categories">Categorias</TabsTrigger>
             <TabsTrigger data-testid="tab-addons" value="addons">Bordas & Adicionais</TabsTrigger>
             <TabsTrigger data-testid="tab-zones" value="zones">Taxas de Entrega</TabsTrigger>
             <TabsTrigger data-testid="tab-settings" value="settings">Configurações</TabsTrigger>
           </TabsList>
+
+          {/* ORDERS */}
+          <TabsContent value="orders" className="mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-xs text-smoke">{orders.length} pedidos recebidos via WhatsApp</p>
+              <Button data-testid="refresh-orders-button" variant="outline" onClick={load} className="border-white/10 bg-transparent text-cream hover:bg-white/10 hover:text-white">
+                Atualizar
+              </Button>
+            </div>
+            {orders.length === 0 && (
+              <p className="text-xs text-smoke bg-surface2 border border-white/10 rounded-xl p-4" data-testid="orders-empty">
+                Nenhum pedido ainda. Quando um cliente enviar o pedido pelo cardápio, ele aparece aqui.
+              </p>
+            )}
+            <div className="space-y-3">
+              {orders.map((o) => (
+                <div key={o.id} data-testid={`admin-order-${o.id}`} className="bg-surface2 border border-white/10 rounded-xl p-4">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <p className="text-sm font-bold text-white">
+                        {o.customer_name || "Cliente"} · <span className="mono-badge text-ember">{brl(o.total)}</span>
+                      </p>
+                      <p className="text-[11px] text-smoke">
+                        {new Date(o.created_at).toLocaleString("pt-BR")} · {o.mode === "entrega" ? `Entrega${o.neighborhood ? ` — ${o.neighborhood}` : ""}` : "Retirada"}
+                        {o.payment && ` · ${o.payment}${o.change_for ? ` (troco p/ ${brl(o.change_for)})` : ""}`}
+                      </p>
+                    </div>
+                    <Select value={o.status} onValueChange={(v) => setOrderStatus(o.id, v)}>
+                      <SelectTrigger data-testid={`order-status-${o.id}`} className={`w-44 border-white/10 text-xs font-bold ${ORDER_STATUS[o.status]?.cls || ""} bg-card2`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-surface2 border-white/10 text-cream">
+                        {Object.entries(ORDER_STATUS).map(([v, s]) => (
+                          <SelectItem key={v} value={v}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <ul className="mt-3 space-y-1 border-t border-white/10 pt-3">
+                    {o.lines.map((l, i) => (
+                      <li key={i} className="text-[11px] text-ash">
+                        <span className="text-white font-bold">{l.qty}x</span> {l.name}
+                        {l.variant && <span className="text-ember"> ({l.variant})</span>}
+                        {l.addons.map((a, j) => (
+                          <span key={j} className="text-smoke"> · + {a}</span>
+                        ))}
+                        <span className="text-smoke"> — {brl(l.unit_price * l.qty)}</span>
+                      </li>
+                    ))}
+                    {o.fee > 0 && <li className="text-[11px] text-smoke">Taxa de entrega — {brl(o.fee)}</li>}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
 
           {/* ITEMS */}
           <TabsContent value="items" className="mt-6">
@@ -475,14 +569,14 @@ export default function DashboardPage() {
               <Input data-testid="item-badge-input" value={itemForm.badge} onChange={(e) => setItemForm({ ...itemForm, badge: e.target.value })} className="mt-1 bg-card2 border-white/10 text-white" />
             </div>
             <div>
-              <Label className="text-[11px] uppercase tracking-widest text-smoke">Sabores (um por linha — deixe vazio se não aplicável)</Label>
+              <Label className="text-[11px] uppercase tracking-widest text-smoke">Sabores — um por linha; preço próprio opcional: "4 Queijos = 50,00"</Label>
               <Textarea
                 data-testid="item-flavors-input"
-                value={Array.isArray(itemForm.flavors) ? itemForm.flavors.join("\n") : itemForm.flavors}
+                value={Array.isArray(itemForm.flavors) ? flavorsToText(itemForm.flavors) : itemForm.flavors}
                 onChange={(e) => setItemForm({ ...itemForm, flavors: e.target.value })}
                 className="mt-1 bg-card2 border-white/10 text-white"
-                rows={3}
-                placeholder={"Calabresa\nFrango com Catupiry\nMargherita"}
+                rows={4}
+                placeholder={"Calabresa\nFrango com Catupiry = 45,00\n4 Queijos = 50,00"}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">

@@ -40,8 +40,13 @@ The checkout process should take place via WhatsApp, and the digital menu access
 - Delivery fee by neighborhood: admin CRUD tab (bairro → taxa); customer picks bairro in cart on "Entrega"; fee shown, summed into total and itemized in WhatsApp message; "Outro bairro" fallback = taxa a combinar
 - Addons/zones ship EMPTY (no fabricated prices) — owner fills real values in admin
 
+## Implemented (2026-10-21, iteration 4)
+- Per-flavor pricing: flavors are {name, price?}; admin enters "Nome = 45,00" per line; dialog shows each flavor's price; highest selected price wins for meio-a-meio; real Anota AI prices seeded for Salgada G (R$25–50) and Doce G (R$45); P sizes and meio-a-meio keep base "a partir de" prices
+- Payment method in cart: Pix / Cartão / Dinheiro (+ optional "troco para"), included in WhatsApp message
+- Order history: POST /api/orders on checkout; admin "Pedidos" tab lists orders with lines, payment, fee, total and status workflow (Novo → Em preparo → Saiu p/ entrega → Concluído)
+
 ## Backlog
-- P0: confirm real WhatsApp number with owner; owner fills real add-on prices and delivery fees per neighborhood in admin
+- P0: confirm real WhatsApp number with owner; owner fills real add-on prices, delivery fees and P-size flavor prices in admin
 - P1: real customer testimonials replacing placeholder
 - P2: image upload (object storage) instead of URL paste
-- P2: order history/stats in dashboard
+- P2: order stats (daily revenue) in dashboard
